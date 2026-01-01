@@ -1,0 +1,65 @@
+name: Build Multi-Platform Flet App
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # оп для сборки
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        include:
+          - os: windows-latest
+            artifact_name: windows-app
+            executable_path: dist/*.exe
+            sep: ";" # разделитель для --add-data в Windows
+          - os: ubuntu-latest
+            artifact_name: linux-app
+            executable_path: dist/KroneckerApp
+            sep: ":" # разделитель для Linux
+          - os: macos-latest
+            artifact_name: macos-app
+            executable_path: KroneckerApp_macOS.zip
+            sep: ":" # разделитель для macOS
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flet pyinstaller
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libvlc-dev libmpv-dev
+
+      - name: Build App
+        run: |
+          # Используем переменные из матрицы для настройки путей и разделителей
+          flet pack main.py --icon icon.png --name "KroneckerApp" --add-data "examples.json${{ matrix.sep }}."
+
+      - name: Prepare macOS artifact
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd dist
+          zip -r ../KroneckerApp_macOS.zip KroneckerApp.app
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.executable_path }}
