@@ -1,5 +1,5 @@
-# kronecker_algorithm_ver_5.py
-# ver 5.0
+# kronecker_algorithm_ver_4.py
+# ver 4.0
 
 from itertools import *
 from math import *
@@ -70,45 +70,6 @@ def check_constant_term_division(x, y, const):
     if const % const_int != 0: return False
 
     return True
-
-
-def eisenstein_criterion(polynomial):
-    if len(polynomial) < 2:
-        return False
-
-    a0 = abs(polynomial[0])
-    if a0 == 0:
-        return False
-
-    for p in range(2, a0 + 1):
-        is_prime = True
-        for i in range(2, int(p ** 0.5) + 1):
-            if p % i == 0:
-                is_prime = False
-                break
-
-        if not is_prime:
-            continue
-
-        condition1 = True
-        for i in range(len(polynomial) - 1):
-            if polynomial[i] % p != 0:
-                condition1 = False
-                break
-
-        if not condition1:
-            continue
-
-        condition2 = (polynomial[-1] % p != 0)
-        if not condition2:
-            continue
-
-        condition3 = (polynomial[0] % (p * p) != 0)
-
-        if condition1 and condition2 and condition3:
-            return True
-
-    return False
 
 ####################################################################################
 

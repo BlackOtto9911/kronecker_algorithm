@@ -1,3 +1,6 @@
+# kronecker_algorithm_ver_6_0.py
+# ver 6.0
+
 from itertools import *
 from math import *
 

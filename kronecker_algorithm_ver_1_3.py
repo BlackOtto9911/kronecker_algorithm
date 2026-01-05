@@ -1,3 +1,6 @@
+# kronecker_algorithm_ver_1_3.py
+# ver 1.3.0
+
 from itertools import *
 
 def find_divisors(n):
