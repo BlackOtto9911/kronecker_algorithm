@@ -174,7 +174,7 @@ def main(page: ft.Page):
                 for i in range(len(coefficients)-1, -1, -1):
                     if coefficients[i] != 0:
                         no_zero = True
-                    if no_zero: new_coefficients.append(coefficients[i])
+                    if no_zero: new_coefficients.insert(0, coefficients[i])
                 return True, new_coefficients
             except ValueError:
                 return False, []
@@ -241,7 +241,7 @@ def main(page: ft.Page):
             for i in range(len(coefficients) - 1, -1, -1):
                 if coefficients[i] != 0:
                     no_zero = True
-                if no_zero: new_coefficients.append(coefficients[i])
+                if no_zero: new_coefficients.insert(0, coefficients[i])
             return True, new_coefficients
 
 
