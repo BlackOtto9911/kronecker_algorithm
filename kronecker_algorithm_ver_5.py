@@ -378,7 +378,6 @@ def kronecker_factorization_ver_5(polynomial):
 
         # делители для каждого значения
         divs = [find_divisors(v, all=False) for v in values]
-        print(polynomial, a, values, divs)
 
         # трехмерный массив точек
         points = [[] for i in range(len(divs))]

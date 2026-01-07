@@ -1,6 +1,7 @@
 # main.py
 import json
 import os
+import re
 import sys
 
 import flet as ft
@@ -148,27 +149,89 @@ def main(page: ft.Page):
     ##########################################################
 
     def parse_polynomial_input(text):
-        # убираем квадратные/круглые скобки и пробелы
-        text = text.strip()
+        polynomial_input_type = 1 if 'x' in text else 0
+        if not polynomial_input_type:
+            # убираем квадратные/круглые скобки и пробелы
+            text = text.strip()
 
-        # проверяем на наличие скобок
-        if text.startswith('[') and text.endswith(']'):
-            text = text[1:-1].strip()
-        elif text.startswith('(') and text.endswith(')'):
-            text = text[1:-1].strip()
+            # проверяем на наличие скобок
+            if text.startswith('[') and text.endswith(']'):
+                text = text[1:-1].strip()
+            elif text.startswith('(') and text.endswith(')'):
+                text = text[1:-1].strip()
 
-        # заменяем пробелы на запятые если нет запятых
-        if ',' not in text and ' ' in text:
-            text = text.replace(' ', ',')
+            # заменяем пробелы на запятые если нет запятых
+            if ',' not in text and ' ' in text:
+                text = text.replace(' ', ',')
 
-        # разделяем по запятым
-        parts = [part for part in text.split(',')]
+            # разделяем по запятым
+            parts = [part for part in text.split(',')]
 
-        try:
-            coefficients = [int(part) for part in parts]
+            try:
+                coefficients = [int(part) for part in parts]
+                return True, coefficients
+            except ValueError:
+                return False, []
+        else:
+            # удаляем пробелы
+            text = text.replace(' ', '').lower()
+
+            # пустая строка
+            if not text:
+                return [0]
+
+            max_degree = 0
+            if 'x' in text:
+                for match in re.finditer(r'x\^(\d+)', text):
+                    degree = int(match.group(1))
+                    max_degree = max(max_degree, degree)
+                if 'x' in text and 'x^' not in text.replace('x^', 'x^'):
+                    max_degree = max(max_degree, 1)
+            else:
+                try:
+                    value = float(text) if '.' in text else int(text)
+                    return [value]
+                except ValueError:
+                    return False, []
+
+            coefficients = [0] * (max_degree + 1)
+
+            if text[0] not in '+-':
+                text = '+' + text
+
+            terms = re.findall(r'[+-][^+-]*', text)
+
+            for term in terms:
+                if 'x' not in term:
+                    try:
+                        coefficients[0] = float(term) if '.' in term else int(term)
+                    except ValueError:
+                        return False, []
+                    continue
+
+                if '^' in term:
+                    degree_match = re.search(r'\^(\d+)', term)
+                    degree = int(degree_match.group(1)) if degree_match else 1
+                else:
+                    degree = 1
+
+                x_index = term.find('x')
+                coeff_str = term[:x_index]
+
+                if not coeff_str or coeff_str in ('+', '-'):
+                    coeff = 1 if not coeff_str or coeff_str == '+' else -1
+                else:
+                    try:
+                        coeff = float(coeff_str) if '.' in coeff_str else int(coeff_str)
+                    except ValueError:
+                        coeff = 1 if coeff_str.startswith('+') else -1
+
+                try:
+                    coefficients[degree] = coeff
+                except IndexError:
+                    pass
             return True, coefficients
-        except ValueError:
-            return False, []
+
 
     def run_algorithm(e):
         input_text = polynomial_input.value
@@ -556,7 +619,7 @@ def main(page: ft.Page):
                     color=ft.Colors.BLACK,
                     weight=ft.FontWeight.W_500
                 ),
-                min_lines=10,
+                min_lines=14,
                 mouse_cursor=ft.MouseCursor.BASIC
             ),
             ft.TextField(
@@ -574,19 +637,22 @@ def main(page: ft.Page):
                     color=ft.Colors.BLACK,
                     weight=ft.FontWeight.W_500
                 ),
-                min_lines=10,
+                min_lines=14,
                 mouse_cursor=ft.MouseCursor.BASIC
             ),
         ], expand=True, vertical_alignment=ft.CrossAxisAlignment.START),
         expand=True
     )
 
-    examples_container.content.controls[0].value =  "[-3, -5, 0, 1, 1]   →\n" + \
-                                                    "[-3 -5 0 1 1]       →\n" + \
-                                                    "(-3, -5, 0, 1, 1)   →    x⁴ + x³ - 5x - 3\n" + \
-                                                    "(-3 -5 0 1 1)       →\n" + \
-                                                    "-3, -5, 0, 1, 1     →\n" + \
-                                                    "-3 -5 0 1 1         →\n\n" + \
+    examples_container.content.controls[0].value =  "1) в виде массива коэффициентов\n" + \
+                                                    "[-3, -5, 0, 1, 1]         →\n" + \
+                                                    "[-3 -5 0 1 1]             →\n" + \
+                                                    "(-3, -5, 0, 1, 1)         →    x⁴ + x³ - 5x - 3\n" + \
+                                                    "(-3 -5 0 1 1)             →\n" + \
+                                                    "-3, -5, 0, 1, 1           →\n" + \
+                                                    "-3 -5 0 1 1               →\n\n" + \
+                                                    "2) в виде полинома\n" + \
+                                                    "x^4 + x^3 - 5x - 3   →   x⁴ + x³ - 5x - 3\n\n" + \
                                                     "Первое число - свободный член, \nпоследнее число - старший коэффициент!"
     examples_container.content.controls[1].value = "[-3, -5, 0, 1, 1]\n" + \
                                                    "      ↓\n" + \
