@@ -128,31 +128,32 @@ def divide_polynomials(p, q):
 
 def print_polynomial_ver_4(p):
     if not p:
-        return "0"
+        return '0'
 
-    result = ""
+    result = ''
     for i in range(len(p) - 1, -1, -1):
-        if p[i] != 0:
-            k = str(abs(p[i]))
-            if abs(p[i]) == 1 and i != 0:
-                k = ''
+        sign = '+ ' if p[i] > 0 else '- '
+        if i == len(p) - 1: sign = '' if p[i] >= 0 else '-'
+        if len(p) == 1: sign = '' if p[i] > 0 else '-'
 
-            if i == 0: result += k
-            elif i == 1: result += k + 'x'
-            else: result += k + 'x^' + str(i)
+        if i == 0 and p[i] != 0:
+            result += sign + str(abs(p[i]))
 
-            if i != 0:
-                if i > 0:
-                    # Проверяем следующий коэффициент
-                    next_nonzero = False
-                    for j in range(i - 1, -1, -1):
-                        if p[j] != 0:
-                            next_nonzero = True
-                            if p[j] > 0: result += ' + '
-                            else: result += ' - '
-                            break
-    if result == "":
-        result = "0"
+        elif i == 1 and p[i] != 0:
+            if abs(p[i]) == 1: result += sign + 'x'
+            else: result += sign + str(abs(p[i])) + 'x'
+            if p[0] != 0: result += ' '
+
+        elif i > 1 and p[i] != 0:
+            if abs(p[i]) == 1: result += sign + 'x^' + str(i)
+            else: result += sign + str(abs(p[i])) + 'x^' + str(i)
+            zeroes = 0
+            for j in range(i):
+                if p[j]!=0: zeroes+=1
+            if zeroes > 0: result += ' '
+
+    if result == '':
+        result = '0'
 
     return result
 
@@ -233,6 +234,10 @@ def kronecker_factorization_ver_4(polynomial):
 
     const_multiplier = gcd(*polynomial)
     polynomial = [k // const_multiplier for k in polynomial]
+
+    if polynomial[-1] < 0:
+        const_multiplier *= -1
+        polynomial = [-1*p for p in polynomial]
 
     while is_polynomial(polynomial):
 
