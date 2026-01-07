@@ -169,7 +169,13 @@ def main(page: ft.Page):
 
             try:
                 coefficients = [int(part) for part in parts]
-                return True, coefficients
+                new_coefficients = []
+                no_zero = False
+                for i in range(len(coefficients)-1, -1, -1):
+                    if coefficients[i] != 0:
+                        no_zero = True
+                    if no_zero: new_coefficients.append(coefficients[i])
+                return True, new_coefficients
             except ValueError:
                 return False, []
         else:
@@ -230,7 +236,13 @@ def main(page: ft.Page):
                     coefficients[degree] = coeff
                 except IndexError:
                     pass
-            return True, coefficients
+            new_coefficients = []
+            no_zero = False
+            for i in range(len(coefficients) - 1, -1, -1):
+                if coefficients[i] != 0:
+                    no_zero = True
+                if no_zero: new_coefficients.append(coefficients[i])
+            return True, new_coefficients
 
 
     def run_algorithm(e):
@@ -651,9 +663,9 @@ def main(page: ft.Page):
                                                     "(-3 -5 0 1 1)             →\n" + \
                                                     "-3, -5, 0, 1, 1           →\n" + \
                                                     "-3 -5 0 1 1               →\n\n" + \
+                                                    "Первое число - свободный член, \nпоследнее число - старший коэффициент!\n\n" + \
                                                     "2) в виде полинома\n" + \
-                                                    "x^4 + x^3 - 5x - 3   →   x⁴ + x³ - 5x - 3\n\n" + \
-                                                    "Первое число - свободный член, \nпоследнее число - старший коэффициент!"
+                                                    "x^4 + x^3 - 5x - 3   →   x⁴ + x³ - 5x - 3"
     examples_container.content.controls[1].value = "[-3, -5, 0, 1, 1]\n" + \
                                                    "      ↓\n" + \
                                                    "[-1, -1, 1] [3, 2, 1]\n" + \
