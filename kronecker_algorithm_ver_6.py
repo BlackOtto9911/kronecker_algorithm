@@ -3,6 +3,7 @@
 
 from itertools import *
 from math import *
+from kronecker_algorithm_ver_5 import kronecker_factorization_ver_5
 
 def find_divisors(n, all=True):
     if n == 0:
@@ -293,31 +294,51 @@ def kronecker_factorization_ver_6(polynomial):
     mm = 0
 
     start_a = find_divisors(polynomial[0])
+    start_a.append(0)
     if len(start_a)!=0:
         for a_i in start_a:
-            if get_polynomial_value(polynomial, a_i) == 0:
+            v = get_polynomial_value(polynomial, a_i)
+            if v == 0:
                 root = [-a_i, 1]
                 factorization_n_1.append(root)
                 polynomial, q = divide_polynomials(polynomial, root)
                 polynomial = [round(pp) for pp in polynomial]
-                m -= 1
+            elif is_good_point(v, n):
+                a.append(a_i)
+                values.append(v)
+            mm += 1
+            if mm >= m: break
 
     change_points_choice = False
     a_i = 0
     while mm < m:
-        v = get_polynomial_value(polynomial, a_i)
-        if v!=0 and is_good_point(v, n):
-            a.append(a_i)
-            values.append(v)
-            mm += 1
-            if mm >= m: break
+        if a_i not in a:
+            v = get_polynomial_value(polynomial, a_i)
+            if v == 0:
+                root = [-a_i, 1]
+                factorization_n_1.append(root)
+                polynomial, q = divide_polynomials(polynomial, root)
+                polynomial = [round(pp) for pp in polynomial]
+                break
+            elif is_good_point(v, n):
+                a.append(a_i)
+                values.append(v)
+                mm += 1
+                if mm >= m: break
 
-        v_negative = get_polynomial_value(polynomial, -a_i)
-        if a_i != 0 and v_negative!=0 and is_good_point(v_negative, n):
-            a.append(-a_i)
-            values.append(v_negative)
-            mm += 1
-            if mm >= m: break
+        if -a_i not in a and a_i != 0:
+            v_negative = get_polynomial_value(polynomial, -a_i)
+            if v_negative == 0:
+                root = [a_i, 1]
+                factorization.append(root)
+                polynomial, q = divide_polynomials(polynomial, root)
+                polynomial = [round(pp) for pp in polynomial]
+                break
+            elif is_good_point(v_negative, n):
+                a.append(-a_i)
+                values.append(v_negative)
+                mm += 1
+                if mm >= m: break
 
         a_i += 1
         if a_i > n*2:
@@ -398,10 +419,16 @@ def kronecker_factorization_ver_6(polynomial):
         polynomial = [round(pp) for pp in polynomial]
     factorization.append(polynomial)
 
+    new_factorization = []
+    for factor in factorization:
+        if is_polynomial(factor):
+            refactor = kronecker_factorization_ver_5(factor)["factorization"]
+            for new_factor in refactor: new_factorization.append(new_factor)
+
     if len(factorization)!=0: factorization[0] = [k*const_multiplier for k in factorization[0]]
 
     return {
             "original": original_poly,
-            "factorization": factorization+factorization_n_1,
+            "factorization": new_factorization+factorization_n_1,
             "lagrange_count": count_lagrange
     }
